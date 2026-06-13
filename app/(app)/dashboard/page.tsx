@@ -72,7 +72,7 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {memberships.map(({ group, role }) => {
+          {memberships.map(({ group, role }: any) => {
             const lastExpense = group.expenses[0];
             return (
               <Link key={group.id} href={`/group/${group.id}`} id={`group-card-${group.id}`} className="group relative block">
