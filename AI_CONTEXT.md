@@ -64,7 +64,48 @@
 
 ---
 
-## 7. Interview Log
+## 7. Database Schema
+
+**ORM:** Prisma | **Database:** PostgreSQL
+**Schema file:** `prisma/schema.prisma`
+
+### Assumptions Made (pending Round 2 confirmation)
+
+| ID | Assumption |
+|---|---|
+| A1 | Auth: email + password only. JWT-based sessions. No social login. |
+| A2 | Group roles: ADMIN (creator) and MEMBER. Only ADMIN can remove members or delete group. |
+| A3 | Single payer per expense (one person paid the full bill). |
+| A4 | All four split types supported: EQUAL, UNEQUAL, PERCENTAGE, SHARES. |
+| A5 | EQUAL split divides only among *selected* participants, not all group members. |
+| A6 | Settlements are manually recorded; directly reduce balance. No "settlement expense" pattern. |
+| A7 | Single currency per expense stored as string (default: INR). No conversion. |
+| A8 | Hard deletes only (no soft-delete) for MVP. |
+| A9 | Comment editing not supported for MVP — insert only. |
+
+### Tables
+
+| Table | Purpose |
+|---|---|
+| `users` | Registered users; email + bcrypt-hashed password; no plaintext credentials |
+| `groups` | Named expense-sharing groups; balances NOT stored here — computed at query time |
+| `group_members` | Junction: User ↔ Group with ADMIN/MEMBER role; unique per (group, user) |
+| `expenses` | A bill paid by one user; records total amount, split type, date, currency |
+| `expense_participants` | Per-user share of an expense; `shareAmount` always populated for fast balance queries |
+| `settlements` | Manual payment recorded between two users; reduces outstanding balance |
+| `expense_comments` | Text comments on expenses; insert-only for MVP |
+
+### Key Design Decisions
+
+- **Balances are never stored.** Computed at query time from `expenses → expense_participants` minus `settlements`. Avoids stale data.
+- **`shareAmount` is always pre-computed** and stored on `ExpenseParticipant` at write time regardless of split type. Balance queries are a simple SUM — no runtime math.
+- **`onDelete: Cascade`** on all child relations for referential integrity.
+- **`Decimal(12,2)`** used for all monetary fields to avoid floating-point rounding errors.
+- **UUIDs** used as primary keys across all tables.
+
+---
+
+## 8. Interview Log
 
 ### Round 1 — Product Goals & Research (2026-06-13)
 - Q1 answered: Portfolio + recruiter demo; production-like but not feature-complete
