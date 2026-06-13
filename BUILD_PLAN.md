@@ -1,4 +1,4 @@
-# BUILD_PLAN.md — SpreeTrail (Splitwise MVP)
+# BUILD_PLAN.md — Spreetail (Splitwise MVP)
 
 > Generated from: `AI_CONTEXT.md` (Round 1 confirmed; Round 2 partially confirmed)
 > Last updated: 2026-06-13
