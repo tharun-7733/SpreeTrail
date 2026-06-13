@@ -122,6 +122,7 @@
 | `/expense/[id]` | Dynamic CSR | Expense detail + split breakdown + comments |
 | `/balances` | Dynamic SSR | Net balances across all groups |
 | `/groups/new` | Dynamic CSR | Create group form |
+| `/groups` | Dynamic SSR | All groups grid (identical to dashboard) |
 
 ### Component Tree
 
@@ -147,7 +148,7 @@ types/
 
 ### Key Design Decisions
 
-- **Server Components for data-heavy pages** (`/dashboard`, `/balances`) — no client-side fetch needed, faster TTI.
+- **Server Components for data-heavy pages** (`/dashboard`, `/balances`, `/groups`) — no client-side fetch needed, faster TTI.
 - **Client Components for interactive pages** (`/group/[id]`, `/expense/[id]`) — dialogs and optimistic updates.
 - **Auth guard in `(app)/layout.tsx`** — single server-side check; all child pages are automatically protected.
 - **`Omit<RequestInit, 'body'> & { body?: any }`** — fixed TypeScript conflict between `BodyInit` and plain objects.
@@ -339,3 +340,22 @@ Filter: |net| < 0.01 → zero balance (floating-point dust)
 - [ ] `.env.example` with `DATABASE_URL` and `JWT_SECRET`
 - [ ] `prisma migrate dev --name init`
 - [ ] Deployment: Vercel + Supabase/Neon
+
+---
+
+### Update 009 — 2026-06-13 · Backend API Implementations + UI Fixes
+
+**What changed:**
+- **Server configuration fixes:** Installed missing `express` and `@types/express` packages, and explicitly typed request and response parameters in `server.ts` to solve TypeScript compilation errors (`noImplicitAny`).
+- **UI Route Fixes:** Created `app/(app)/groups/page.tsx` since the Sidebar navigation linked to `/groups` but the page did not exist (resulted in a 404). This page now renders a visual list of all expense groups, identical to the dashboard.
+- **API routes implemented:**
+  - `app/api/groups/route.ts`: Built `GET` (list groups) and `POST` (create group). Replaced the missing endpoint that was blocking group creation.
+  - `app/api/groups/[groupId]/route.ts`: Built `GET` to fetch group details and members list.
+  - `app/api/groups/[groupId]/expenses/route.ts`: Built `GET` to fetch the chronological list of expenses for a given group.
+  - `app/api/groups/[groupId]/balances/route.ts`: Built `GET` to calculate and return exact balances within the group (taking both `ExpenseParticipant` shares and `Settlement` records into account).
+
+**Decisions made:**
+- Because the `/group/[id]` dashboard depends on three distinct data sources (metadata, expenses, balances) to render the UI concurrently, three separate `GET` API endpoints were explicitly mapped to supply this granular data rather than a single monolithic payload.
+
+**Known limitations resolved:**
+- Partially resolved **L1** (API routes for Groups, Expenses, and Balances reading are now built. Members POST, Settlements POST, and Comments still require implementation).
