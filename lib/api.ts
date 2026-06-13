@@ -17,7 +17,8 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
     throw new Error(error.error || `HTTP ${res.status}`);
   }
 
-  return res.json();
+  const json = await res.json();
+  return json.success === true && json.data !== undefined ? json.data : json;
 }
 
 export const api = {
