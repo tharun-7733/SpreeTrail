@@ -70,7 +70,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
       return NextResponse.json({ error: "Participant shares do not sum up to the total amount" }, { status: 400 });
     }
 
-    const expense = await prisma.$transaction(async (tx) => {
+    const expense = await prisma.$transaction(async (tx: any) => {
       const newExpense = await tx.expense.create({
         data: {
           groupId,
