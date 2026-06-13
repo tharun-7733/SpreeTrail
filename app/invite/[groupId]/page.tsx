@@ -20,12 +20,12 @@ export default function InvitePage({ params }: { params: Promise<{ groupId: stri
   useEffect(() => {
     async function fetchGroup() {
       try {
-        const res = await fetch(`/api/groups/${groupId}`);
+        const res = await fetch(`/api/groups/${groupId}/preview`);
         if (!res.ok) {
           setError("Group not found or invite link is invalid.");
         } else {
           const data = await res.json();
-          setGroup(data);
+          setGroup(data.group);
         }
       } catch (err) {
         setError("Failed to load group details.");
