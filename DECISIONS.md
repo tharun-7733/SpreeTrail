@@ -369,3 +369,148 @@
 - **Options considered:** Including breakdown in the main balances response, query parameter toggle.
 - **Reason chosen:** Separation of concerns. The summary endpoint is cheap and called on every group page load. The breakdown is expensive (full expense JOIN) and only needed when a user explicitly clicks "why do I owe this?" Merging them would force every user to pay Rohan's query cost on every load.
 - **Tradeoffs:** Two endpoints to document and maintain. Justified by the significant difference in query complexity and call frequency.
+
+---
+
+## [2026-06-13] Section 7: API Design
+
+### Decision 32: Complete Route Inventory
+
+**Auth routes:**
+```
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/logout
+GET    /api/auth/me
+```
+
+**Group routes:**
+```
+POST   /api/groups
+GET    /api/groups
+GET    /api/groups/:groupId                         ← authenticated members only
+GET    /api/groups/:groupId/preview                 ← public (invite preview)
+POST   /api/groups/:groupId/join
+POST   /api/groups/:groupId/members                 ← add member (admin)
+DELETE /api/groups/:groupId/members/:memberId       ← remove member (admin)
+```
+
+**Expense routes:**
+```
+GET    /api/groups/:groupId/expenses
+POST   /api/groups/:groupId/expenses
+DELETE /api/groups/:groupId/expenses/:expenseId
+```
+
+**Balance routes:**
+```
+GET    /api/groups/:groupId/balances
+GET    /api/groups/:groupId/balances/:userId/breakdown
+```
+
+**Settlement routes:**
+```
+GET    /api/groups/:groupId/settlements
+POST   /api/groups/:groupId/settlements
+```
+
+**Import routes (ordered by call sequence):**
+```
+POST   /api/imports                                 ← create session
+POST   /api/imports/:sessionId/upload               ← upload CSV, parse rows
+GET    /api/imports/:sessionId                      ← session status + progress
+GET    /api/imports/:sessionId/issues               ← list anomalies
+PATCH  /api/imports/:sessionId/issues/:issueId      ← resolve one anomaly
+POST   /api/imports/:sessionId/complete             ← commit approved rows
+GET    /api/imports/:sessionId/report               ← full import report
+```
+
+### Decision 33: POST /api/groups/:groupId/expenses — Request Body Contract
+- **Decision:** The request body supports all four split types through a polymorphic `participants` array.
+- **Request body:**
+  ```ts
+  {
+    title: string,
+    description?: string,
+    amount: number,
+    currency: string,
+    exchangeRate?: number,       // required if currency != group base currency
+    expenseDate: string,         // ISO 8601: "2026-03-09"
+    paidByUserId: string,
+    splitType: "EQUAL" | "UNEQUAL" | "PERCENTAGE" | "SHARE",
+    participants: [
+      {
+        participantId: string,
+        participantType: "USER" | "GUEST",
+        amount?: number,         // required for UNEQUAL
+        percentage?: number,     // required for PERCENTAGE
+        shares?: number          // required for SHARE; must be > 0
+      }
+    ]
+  }
+  ```
+- **Server-side validation requirements:**
+  - `EQUAL`: participant-level fields ignored; server divides evenly.
+  - `UNEQUAL`: sum of `amount` fields must equal total `amount` ± 0.1.
+  - `PERCENTAGE`: sum of `percentage` fields must be 99.9–100.1%.
+  - `SHARE`: all `shares` > 0.
+  - `GUEST` participants: `participantId` must reference a `GuestParticipant` with `groupId` matching this request. Cross-group guest assignment rejected with 400.
+  - Membership check: every `USER` participant must satisfy `joinedAt <= expenseDate AND (leftAt IS NULL OR leftAt >= expenseDate)`.
+
+### Decision 34: GET /api/groups/:groupId/balances — Response Shape
+- **Decision:** Returns simplified debt graph + raw net-per-user positions. Pairwise raw breakdown reserved for the dedicated breakdown endpoint.
+- **Response:**
+  ```ts
+  {
+    simplifiedDebts: [
+      { fromUserId: string, fromUserName: string, toUserId: string, toUserName: string, amount: number, currency: string }
+    ],
+    rawNetBalances: [
+      { userId: string, userName: string, netBalance: number }
+    ]
+  }
+  ```
+- **Clarification:** `rawNetBalances` is net-per-user (not pairwise). Answers "is Rohan net positive or negative?" Pairwise "who owes whom specifically" comes from the breakdown endpoint.
+
+### Decision 35: Import Pipeline Route Sequencing
+
+| Step | Route | Purpose |
+|---|---|---|
+| 1 | `POST /api/imports` | Creates `ImportSession`, returns `sessionId` |
+| 2 | `POST /api/imports/:sessionId/upload` | Uploads CSV, parses rows, creates `ImportedExpenseRaw`, runs anomaly detection |
+| 3 | `GET /api/imports/:sessionId` | Returns session status and progress counters |
+| 4 | `GET /api/imports/:sessionId/issues` | Returns unresolved anomalies with resolution context |
+| 5 | `PATCH /api/imports/:sessionId/issues/:issueId` | Resolves a single anomaly |
+| 6 | `POST /api/imports/:sessionId/complete` | Commits all approved rows; skips SKIPPED rows |
+| 7 | `GET /api/imports/:sessionId/report` | Returns full computed Import Report (derived, not stored) |
+
+- **Session resumability:** Steps 3–5 can be called repeatedly. Closing the browser and returning restores state via step 3.
+- **Idempotency:** Step 6 checks `ImportedExpenseRaw.createdEntityId` before writing. Already-committed rows are skipped without error.
+- **Note:** `POST /api/imports/:sessionId/upload` (step 2) was omitted from the initial missing-routes list in Q1 — this is corrected here. It is not optional.
+
+### Decision 36: Standardised Error Response Shape
+- **Decision:** All API routes return a consistent error envelope.
+- **Error shape:**
+  ```ts
+  { success: false, code: string, message: string, details?: any, timestamp: string }
+  ```
+- **Success shape:**
+  ```ts
+  { success: true, data: any }
+  ```
+- **Standard error codes (non-exhaustive):**
+  ```
+  UNAUTHORIZED                   → 401
+  FORBIDDEN                      → 403
+  NOT_FOUND                      → 404
+  INVALID_SPLIT_AMOUNTS          → 400
+  INVALID_PERCENTAGE_SPLIT       → 400
+  INACTIVE_MEMBER                → 400
+  MEMBERSHIP_DATE_CONFLICT       → 400
+  DUPLICATE_EXPENSE_DETECTED     → 409
+  IMPORT_SESSION_NOT_FOUND       → 404
+  IMPORT_ROW_ALREADY_COMMITTED   → 409
+  INTERNAL_ERROR                 → 500
+  ```
+- **Reason:** Machine-readable `code` field enables specific frontend error messages without string parsing. `details` provides debuggable context. Consistent shape eliminates special-case handling in API client code.
+- **Current state:** Existing routes return raw data without a `success` wrapper. Standardisation required before the CSV import feature is built on top.
