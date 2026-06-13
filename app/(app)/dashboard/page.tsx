@@ -25,6 +25,7 @@ export default async function DashboardPage() {
         include: {
           members: { include: { user: { select: { id: true, name: true } } } },
           expenses: {
+            where: { deletedAt: null, transactionType: "EXPENSE" },
             orderBy: { createdAt: "desc" },
             take: 1,
             select: { description: true, amount: true, currency: true, createdAt: true },

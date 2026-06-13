@@ -54,7 +54,7 @@ export default function GroupPage({ params }: GroupPageProps) {
       ]);
       setGroup(groupData.group);
       setExpenses(expensesData.expenses);
-      setBalances(balancesData.balances);
+      setBalances(balancesData.simplifiedDebts || balancesData.balances || []);
       setCurrentUserId(meData.user.id);
     } catch (err: any) {
       setError(err.message || "Failed to load group");
@@ -126,10 +126,35 @@ export default function GroupPage({ params }: GroupPageProps) {
           {group.description && <p className="text-sm text-gray-500 mt-0.5">{group.description}</p>}
           <p className="text-xs text-gray-400 mt-1">{group.members.length} members</p>
         </div>
-        <Link href={`/group/${groupId}/expense/new`}>
-          <Button id="add-expense-btn" size="sm">
-            <Plus className="w-4 h-4" />
-            Add expense
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Link href={`/group/${groupId}/import`}>
+            <Button variant="outline" size="sm" className="hidden sm:flex bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100">
+              Import CSV
+            </Button>
+          </Link>
+          <Link href={`/group/${groupId}/settlements`}>
+            <Button variant="outline" size="sm" className="hidden sm:flex text-gray-600">
+              Settlements
+            </Button>
+          </Link>
+          <Link href={`/group/${groupId}/expense/new`}>
+            <Button id="add-expense-btn" size="sm">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add expense
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Balance Breakdown Link */}
+      <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div>
+          <p className="font-semibold">Track your balances</p>
+          <p className="text-violet-100 text-sm">See exactly why you owe or are owed money with a per-expense breakdown.</p>
+        </div>
+        <Link href={`/group/${groupId}/balances/${currentUserId}`}>
+          <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
+            View Breakdown <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </Link>
       </div>
