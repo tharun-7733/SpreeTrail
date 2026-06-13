@@ -71,38 +71,51 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {memberships.map(({ group, role }) => {
             const lastExpense = group.expenses[0];
             return (
-              <Link key={group.id} href={`/group/${group.id}`} id={`group-card-${group.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <CardHeader className="pb-3">
+              <Link key={group.id} href={`/group/${group.id}`} id={`group-card-${group.id}`} className="group relative block">
+                {/* Decorative gradient blur behind the card */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                <Card className="glass-card relative border-0 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden rounded-2xl">
+                  {/* Subtle top border accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500"></div>
+                  
+                  <CardHeader className="pb-3 pt-6">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">{group.name}</CardTitle>
+                      <div className="flex-1 min-w-0 pr-2">
+                        <CardTitle className="text-lg font-bold text-gray-900 truncate tracking-tight">{group.name}</CardTitle>
                         {group.description && (
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{group.description}</p>
+                          <p className="text-xs text-gray-500 mt-1 truncate">{group.description}</p>
                         )}
                       </div>
-                      <ArrowRight className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                      <div className="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+                        <ArrowRight className="w-4 h-4 text-violet-600" />
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Users className="w-3.5 h-3.5" />
-                      <span>{group.members.length} member{group.members.length !== 1 ? "s" : ""}</span>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50/50 w-max px-3 py-1 rounded-full border border-gray-100/50">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span className="font-medium">{group.members.length} member{group.members.length !== 1 ? "s" : ""}</span>
                     </div>
+                    
                     {lastExpense ? (
-                      <div className="rounded-lg bg-gray-50 px-3 py-2">
-                        <p className="text-xs text-gray-500">Latest expense</p>
-                        <p className="text-sm font-medium text-gray-900 truncate">{lastExpense.description}</p>
-                        <p className="text-sm text-violet-600 font-semibold">
+                      <div className="rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50/50 p-4 border border-violet-100/50">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-xs font-semibold text-violet-600 uppercase tracking-wider">Latest</p>
+                          <p className="text-xs text-gray-400">{formatDate(lastExpense.createdAt)}</p>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 truncate mb-2">{lastExpense.description}</p>
+                        <p className="text-lg font-bold text-gray-900">
                           {formatCurrency(Number(lastExpense.amount), lastExpense.currency)}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 italic">No expenses yet</p>
+                      <div className="rounded-xl bg-gray-50/50 border border-dashed border-gray-200 p-4 text-center">
+                        <p className="text-xs text-gray-400 italic">No expenses yet</p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

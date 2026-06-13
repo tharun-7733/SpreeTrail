@@ -28,11 +28,8 @@ export default function GroupPage({ params }: GroupPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Add member dialog
+  // Invite dialog
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [memberEmail, setMemberEmail] = useState("");
-  const [memberLoading, setMemberLoading] = useState(false);
-  const [memberError, setMemberError] = useState("");
 
   // Settlement dialog
   const [settleOpen, setSettleOpen] = useState(false);
@@ -66,21 +63,7 @@ export default function GroupPage({ params }: GroupPageProps) {
     }
   }
 
-  async function handleAddMember(e: React.FormEvent) {
-    e.preventDefault();
-    setMemberLoading(true);
-    setMemberError("");
-    try {
-      await api.members.add(groupId, { email: memberEmail });
-      setMemberEmail("");
-      setAddMemberOpen(false);
-      loadAll(groupId);
-    } catch (err: any) {
-      setMemberError(err.message);
-    } finally {
-      setMemberLoading(false);
-    }
-  }
+
 
   async function handleSettle(balance: BalanceEntry) {
     setSettleBalance(balance);
@@ -254,40 +237,33 @@ export default function GroupPage({ params }: GroupPageProps) {
         </div>
       </div>
 
-      {/* Add member dialog */}
+      {/* Invite dialog */}
       <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add a member</DialogTitle>
+            <DialogTitle>Invite Friends</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleAddMember} id="add-member-form" className="space-y-4">
-            {memberError && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {memberError}
-              </div>
-            )}
-            <div className="space-y-2">
-              <label htmlFor="member-email" className="text-sm font-medium text-gray-700">
-                Email address
-              </label>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Share this link with your friends to invite them to {group.name}.
+            </p>
+            <div className="flex items-center gap-2">
               <Input
-                id="member-email"
-                type="email"
-                placeholder="friend@example.com"
-                value={memberEmail}
-                onChange={(e) => setMemberEmail(e.target.value)}
-                required
+                readOnly
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/invite/${groupId}`}
+                className="bg-gray-50 text-gray-600 font-mono text-sm"
               />
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/invite/${groupId}`);
+                  alert("Link copied to clipboard!");
+                  setAddMemberOpen(false);
+                }}
+              >
+                Copy
+              </Button>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setAddMemberOpen(false)}>
-                Cancel
-              </Button>
-              <Button id="add-member-submit" type="submit" disabled={memberLoading}>
-                {memberLoading ? "Adding…" : "Add member"}
-              </Button>
-            </DialogFooter>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
 
