@@ -73,7 +73,15 @@ const steps = [
   },
 ];
 
-export default function LandingPage() {
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
+export default async function LandingPage() {
+  const session = await getSession();
+  if (session && session.userId) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="landing-page">
       {/* ── Navbar ── */}
