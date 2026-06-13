@@ -70,6 +70,27 @@ export default function GroupPage({ params }: GroupPageProps) {
     setSettleOpen(true);
   }
 
+  async function handleInvite() {
+    const inviteLink = `${window.location.origin}/invite/${groupId}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${group?.name} on Spreetail`,
+          text: `Hey! Join our group "${group?.name}" to track our expenses together.`,
+          url: inviteLink,
+        });
+      } catch (err) {
+        // user cancelled or share failed, open fallback dialog
+        if ((err as Error).name !== 'AbortError') {
+          setAddMemberOpen(true);
+        }
+      }
+    } else {
+      // no web share support, open dialog
+      setAddMemberOpen(true);
+    }
+  }
+
   async function confirmSettle() {
     if (!settleBalance) return;
     setSettleLoading(true);
@@ -213,10 +234,12 @@ export default function GroupPage({ params }: GroupPageProps) {
                 <Button
                   id="add-member-btn"
                   size="sm"
-                  variant="ghost"
-                  onClick={() => setAddMemberOpen(true)}
+                  variant="secondary"
+                  className="bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium"
+                  onClick={handleInvite}
                 >
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="w-4 h-4 mr-1.5" />
+                  Invite
                 </Button>
               </div>
             </CardHeader>
