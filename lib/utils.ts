@@ -14,8 +14,9 @@ export function formatCurrency(amount: number | string, currency = "INR") {
   }).format(num);
 }
 
-export function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
+export function formatDate(dateInput: string | Date) {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  return date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
