@@ -592,3 +592,37 @@ Reason: joinedAt (Apr 15) > expenseDate (Mar 20), so window check fails
   4. Settlement subtraction — `rawBalance - settlement = currentBalance`
   5. Multi-currency — verify `convertedAmountINR` used in calculation, not `originalAmount`
 - **Interview answer:** "A broken UI is recoverable. Incorrect balances fail the assignment. `balanceEngine.test.ts` gives the highest confidence per hour invested."
+
+---
+
+## [2026-06-13] Section 9: Risks and Tradeoffs
+
+### Decision 41: Most Likely Demo Failure — Balance Miscalculation
+- **Risk:** The balance engine is the core dependency for almost every feature (settlements, membership filtering, currency, splits). A bug here breaks the entire application state.
+- **Mitigation:** Write focused unit tests for the balance calculation before touching the UI. Keep the algorithm mathematically simple and strictly decoupled from the database layer (pure functions processing `NormalizedParticipant` inputs).
+- **Interview preparation:** Be ready to recompute a three-person, two-expense balance by hand on a whiteboard during the interview to prove understanding of the algorithm.
+- **Interview answer:** "I'd rather ship fewer features with correct math than a fully polished UI with hidden financial bugs. Correctness is the MVP."
+
+### Decision 42: Incorrect Exchange Rate Entry
+- **Risk:** A user enters the wrong exchange rate during import, causing all foreign currency expenses in that session to be calculated incorrectly in the group's base currency.
+- **Mitigation:** The system does not silently guess exchange rates; it forces the user to provide them explicitly. Both the original currency amount and the exchange rate are preserved on the `Expense` record.
+- **Recovery:** If an error is caught later, the original data remains intact. The user can either re-import or (in a future version) edit the conversion decision.
+- **Tradeoff:** Trading user convenience (live API rates) for historical transparency and reproducibility.
+
+### Decision 43: On-the-fly Balance Calculation Scalability
+- **Risk:** Recomputing the entire group balance from scratch on every page load (`rawExpenseBalances - settlementBalances`) does not scale infinitely.
+- **Mitigation:** The current design is perfectly adequate for the target scale (dozens of users, hundreds/thousands of expenses). Premature optimization (e.g., storing running balances or caching) introduces data invalidation bugs and breaks the audit trail if a historical expense is soft-deleted or edited.
+- **Future optimization path:** When scale demands it (tens of thousands of expenses), introduce materialized balance tables, Redis caching, or background incremental updates.
+- **Interview answer:** "I intentionally avoided premature optimization. Recomputing from immutable records guarantees correctness. Scalability is a problem for tomorrow; correctness is a problem for today."
+
+### Decision 44: Soft Deletion and Forgotten Queries
+- **Risk:** Using a `deletedAt` column means developers might write queries and forget to append `WHERE deletedAt IS NULL`, accidentally surfacing deleted expenses or corrupting balances.
+- **Mitigation:** Direct table querying in route handlers is prohibited. All data access must pass through repository/helper functions (e.g., `getValidExpensesForGroup`) that hardcode the `deletedAt IS NULL` check.
+- **Future improvements:** Implement Prisma middleware (or equivalent ORM features) to automatically inject the soft-delete filter on every read query, or use Row-Level Security (RLS) policies in PostgreSQL.
+
+### Decision 45: Implementation Priority Ranking
+- **Decision:** If time is severely limited (e.g., 48 hours to interview), implementation must follow a strict priority sequence based on assignment grading criteria.
+  1. **`balanceEngine`:** The heart of the application. Everything depends on it. A failure here fails the assignment.
+  2. **CSV Import Pipeline:** The explicit core requirement of the prompt (handling anomalies, data parsing). A basic UI is acceptable if the backend import works flawlessly.
+  3. **Balance Breakdown Endpoint:** A convenience feature that depends on the balance engine working first. Easy to build once the core math is right.
+- **Interview answer:** "Correctness first. Import second. Convenience third."
