@@ -514,3 +514,81 @@ GET    /api/imports/:sessionId/report               ← full import report
   ```
 - **Reason:** Machine-readable `code` field enables specific frontend error messages without string parsing. `details` provides debuggable context. Consistent shape eliminates special-case handling in API client code.
 - **Current state:** Existing routes return raw data without a `success` wrapper. Standardisation required before the CSV import feature is built on top.
+
+---
+
+## [2026-06-13] Section 8: Testing Strategy
+
+### Decision 37: Unit Test Cases for Core Balance Logic
+
+**Test 1 — Equal split:**
+```
+Input:  amount=300, paidBy=Aisha, participants=[Aisha, Rohan, Priya]
+Assert: shareAmount=100 each
+        Aisha.netContribution = 300 - 100 = +200
+        Rohan.netContribution =   0 - 100 = -100
+        Priya.netContribution =   0 - 100 = -100
+```
+
+**Test 2 — Percentage split:**
+```
+Input:  amount=1000, paidBy=Aisha, Aisha=60%, Rohan=40%
+Assert: Aisha.shareAmount = 600, Rohan.shareAmount = 400
+        Aisha.netContribution = 1000 - 600 = +400
+        Rohan.netContribution =    0 - 400 = -400
+```
+
+**Test 3 — Membership date filtering (Sam's rule):**
+```
+Input:  expense.date = 2026-03-20
+        Sam.joinedAt = 2026-04-15
+Assert: Sam is excluded from ExpenseParticipant query result
+        Sam.netContribution = 0 (no record returned)
+Reason: joinedAt (Apr 15) > expenseDate (Mar 20), so window check fails
+```
+
+- **Interview answer:** "I can run these three tests mentally in under a minute. They are the acceptance criteria for the three most critical code paths."
+
+### Decision 38: Anomaly Detection Test Strategy — Unit + Targeted Integration
+- **Decision:** Anomaly detection is tested primarily with unit tests. A targeted set of integration tests covers anomalies that require database state.
+- **Unit tests (pure functions, no DB):**
+  - Intra-CSV duplicate detection (Row 5 vs Row 6 within the same file)
+  - Negative amount detection
+  - Percentage sum out of range
+  - Missing payer
+  - Missing currency
+  - Zero amount
+  - Ambiguous date format
+  - Settlement-disguised-as-expense pattern matching (heuristic on description/missing split_type)
+- **Integration tests (require seeded DB):**
+  - Cross-session duplicate detection: "Is this expense already in the database for this group?"
+  - Membership date conflict: requires `GroupMember` records with `joinedAt`/`leftAt`
+  - Unknown member detection: requires `User` table to check against
+- **Rationale for the distinction:** Intra-CSV anomalies depend only on the raw row data. Cross-session anomalies require knowledge of existing database state. Mixing these into the same test type would either require unnecessary mocking or slow unit tests with DB setup.
+- **Interview answer:** "Pure anomaly detection = unit tests, fast, deterministic. Database-dependent anomaly detection = integration tests with a seeded test DB. Same rules, different test boundaries."
+
+### Decision 39: Top Three Anomaly Tests to Prioritise
+
+| Priority | Anomaly | Reason |
+|---|---|---|
+| 1 | **Duplicate expenses** | Directly corrupts balances. If duplicates slip through, every downstream balance is wrong and the error is invisible to the user. |
+| 2 | **Membership date conflict** | Sam and Meera's requirements both depend on this. A failure here means Sam inherits pre-April expenses (violates the assignment) or Meera is charged post-March (incorrect). |
+| 3 | **Settlement misclassified as expense** | Row goes to the wrong table. If it lands in `Expense`, Rohan's balance includes a non-expense record. If missed, the debt graph is permanently corrupted for that group. |
+
+- **Not prioritised (acceptable gaps for MVP):** Ambiguous date format, currency format issues, name casing — these affect data clarity but do not corrupt the debt graph if undetected.
+
+### Decision 40: Highest-Value Test File — balanceEngine.test.ts
+- **Decision:** If only one test file can be written before the interview, it is `balanceEngine.test.ts`.
+- **Reason:** The balance engine is the single function that every named user requirement passes through:
+  - Aisha → simplified debts come from it
+  - Rohan → traceability breakdown comes from it
+  - Sam → membership filter runs inside it
+  - Priya → currency conversion applied inside it
+  - Settlement subtraction → happens inside it
+- **Test cases to include (minimum viable):**
+  1. Equal split, 3 participants, payer included — verify net contributions
+  2. Percentage split summing to 100% — verify shares
+  3. Sam's join date filter — verify exclusion from pre-join expenses
+  4. Settlement subtraction — `rawBalance - settlement = currentBalance`
+  5. Multi-currency — verify `convertedAmountINR` used in calculation, not `originalAmount`
+- **Interview answer:** "A broken UI is recoverable. Incorrect balances fail the assignment. `balanceEngine.test.ts` gives the highest confidence per hour invested."
