@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   TrendingUp,
 } from "lucide-react";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Spreetail — Split Expenses with Ease",
@@ -45,7 +47,7 @@ const features = [
     icon: Shield,
     title: "Secure & Private",
     description:
-      "JWT-based auth with bcrypt password hashing. Your data stays yours.",
+      "JWT-based auth with robust password hashing. Your data stays yours.",
   },
   {
     icon: TrendingUp,
@@ -73,9 +75,6 @@ const steps = [
   },
 ];
 
-import { getSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
-
 export default async function LandingPage() {
   const session = await getSession();
   if (session && session.userId) {
@@ -83,123 +82,151 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="landing-page">
+    <div className="min-h-screen bg-gray-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+      
       {/* ── Navbar ── */}
-      <nav className="landing-nav">
-        <div className="landing-container landing-nav-inner">
-          <div className="landing-logo">
-            <div className="landing-logo-icon">S</div>
-            <span className="landing-logo-text">Spreetail</span>
-          </div>
-          <div className="landing-nav-links">
-            <Link href="/login" className="landing-nav-link">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-600/20">
+              S
+            </div>
+            <span className="font-bold text-xl text-slate-900 tracking-tight">Spreetail</span>
+          </Link>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors hidden sm:block">
               Sign in
             </Link>
-            <Link href="/register" className="landing-cta-btn-small" id="nav-get-started">
-              Get started free
+            <Link 
+              href="/register" 
+              className="text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-600/20 active:scale-95"
+            >
+              Get started
             </Link>
           </div>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="landing-hero">
-        {/* Radial glow orbs */}
-        <div className="landing-orb landing-orb-1" aria-hidden="true" />
-        <div className="landing-orb landing-orb-2" aria-hidden="true" />
+      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+        {/* Subtle background gradients */}
+        <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-indigo-50 to-transparent pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none" />
+        <div className="absolute top-32 -left-24 w-72 h-72 bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none" />
 
-        <div className="landing-container landing-hero-inner">
-          <div className="landing-badge">
-            <CheckCircle2 className="landing-badge-icon" />
-            Free forever · No credit card required
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+          
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-indigo-100 text-sm font-medium text-indigo-700 shadow-sm mb-8 animate-fade-in-up">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Free forever · No credit card required</span>
           </div>
 
-          <h1 className="landing-hero-title">
-            Split expenses,
-            <br />
-            <span className="landing-gradient-text">stay friends.</span>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 max-w-4xl leading-tight">
+            Split expenses, <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+              stay friends.
+            </span>
           </h1>
 
-          <p className="landing-hero-desc">
-            Spreetail makes it effortless to track shared bills, split costs
-            any way you like, and settle up — for trips, roommates, dinners,
-            and everything in between.
+          <p className="text-lg sm:text-xl text-slate-600 mb-10 max-w-2xl leading-relaxed">
+            Spreetail makes it effortless to track shared bills, split costs any way you like, and settle up — for trips, roommates, dinners, and everything in between.
           </p>
 
-          <div className="landing-hero-actions">
-            <Link href="/register" className="landing-cta-btn" id="hero-get-started">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <Link 
+              href="/register" 
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0"
+            >
               Start splitting for free
-              <ArrowRight className="landing-cta-icon" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link href="/login" className="landing-ghost-btn" id="hero-sign-in">
+            <Link 
+              href="/login" 
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+            >
               Sign in
             </Link>
           </div>
 
-          {/* Fake dashboard preview */}
-          <div className="landing-preview">
-            <div className="landing-preview-bar">
-              <span className="landing-preview-dot" style={{ background: "#ff5f57" }} />
-              <span className="landing-preview-dot" style={{ background: "#febc2e" }} />
-              <span className="landing-preview-dot" style={{ background: "#28c840" }} />
-              <span className="landing-preview-bar-title">Spreetail — Dashboard</span>
+          {/* Clean Dashboard Preview */}
+          <div className="mt-20 w-full max-w-5xl bg-white rounded-2xl shadow-2xl shadow-slate-200/50 border border-gray-200 overflow-hidden transform transition-all duration-700 hover:shadow-indigo-100">
+            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <div className="w-3 h-3 rounded-full bg-red-400" />
+              <div className="w-3 h-3 rounded-full bg-amber-400" />
+              <div className="w-3 h-3 rounded-full bg-green-400" />
+              <div className="ml-2 text-xs font-medium text-slate-400">spreetail.com</div>
             </div>
-            <div className="landing-preview-body">
-              {/* Mock sidebar */}
-              <div className="landing-mock-sidebar">
-                <div className="landing-mock-brand">
-                  <div className="landing-mock-logo" />
-                  <span className="landing-mock-brand-text">Spreetail</span>
+            
+            <div className="flex h-[400px]">
+              {/* Sidebar Mock */}
+              <div className="hidden sm:flex flex-col w-64 bg-gray-50/50 border-r border-gray-100 p-4 gap-2">
+                <div className="flex items-center gap-2 px-2 py-1 mb-4">
+                  <div className="w-6 h-6 rounded bg-indigo-600" />
+                  <div className="h-4 w-20 bg-slate-200 rounded" />
                 </div>
-                {["Dashboard", "Groups", "Balances"].map((item) => (
-                  <div
-                    key={item}
-                    className={`landing-mock-nav-item${item === "Dashboard" ? " active" : ""}`}
-                  >
-                    <div className="landing-mock-nav-icon" />
-                    {item}
-                  </div>
-                ))}
+                <div className="h-8 w-full bg-indigo-100/50 rounded-lg flex items-center px-3">
+                  <div className="w-4 h-4 rounded bg-indigo-600/30 mr-2" />
+                  <div className="h-3 w-16 bg-indigo-600/40 rounded" />
+                </div>
+                <div className="h-8 w-full rounded-lg flex items-center px-3">
+                  <div className="w-4 h-4 rounded bg-slate-200 mr-2" />
+                  <div className="h-3 w-12 bg-slate-200 rounded" />
+                </div>
+                <div className="h-8 w-full rounded-lg flex items-center px-3">
+                  <div className="w-4 h-4 rounded bg-slate-200 mr-2" />
+                  <div className="h-3 w-20 bg-slate-200 rounded" />
+                </div>
               </div>
-              {/* Mock content */}
-              <div className="landing-mock-content">
-                <div className="landing-mock-header">
-                  <div className="landing-mock-title-block" />
-                  <div className="landing-mock-btn" />
+              
+              {/* Content Mock */}
+              <div className="flex-1 p-6 sm:p-8 bg-white flex flex-col gap-6">
+                <div className="flex justify-between items-center">
+                  <div className="h-6 w-32 bg-slate-100 rounded-md" />
+                  <div className="h-9 w-28 bg-indigo-600/10 rounded-lg" />
                 </div>
-                <div className="landing-mock-cards">
-                  {["Goa Trip 🏖️", "Flat Expenses 🏠", "Dinner Club 🍜"].map((g) => (
-                    <div key={g} className="landing-mock-card">
-                      <div className="landing-mock-card-title">{g}</div>
-                      <div className="landing-mock-card-meta">
-                        <div className="landing-mock-meta-pill" />
-                        <div className="landing-mock-meta-pill short" />
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="p-4 border border-gray-100 rounded-xl bg-gray-50/30">
+                      <div className="h-4 w-24 bg-slate-200 rounded mb-4" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-1">
+                          <div className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white" />
+                          <div className="w-6 h-6 rounded-full bg-slate-300 border-2 border-white -ml-2" />
+                        </div>
+                        <div className="h-5 w-16 bg-indigo-100 rounded-full" />
                       </div>
-                      <div className="landing-mock-card-amount" />
                     </div>
                   ))}
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
       {/* ── How it works ── */}
-      <section className="landing-section" id="how-it-works">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <h2 className="landing-section-title">How it works</h2>
-            <p className="landing-section-desc">
+      <section className="py-20 bg-white" id="how-it-works">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How it works</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Get started in under a minute. No setup, no fuss.
             </p>
           </div>
-          <div className="landing-steps">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-8 left-[15%] right-[15%] h-0.5 bg-gray-100" />
+            
             {steps.map(({ step, title, description }) => (
-              <div key={step} className="landing-step">
-                <div className="landing-step-number">{step}</div>
-                <h3 className="landing-step-title">{title}</h3>
-                <p className="landing-step-desc">{description}</p>
+              <div key={step} className="relative flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-xl font-bold text-indigo-600 mb-6 relative z-10">
+                  {step}
+                </div>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">{title}</h3>
+                <p className="text-slate-600">{description}</p>
               </div>
             ))}
           </div>
@@ -207,22 +234,23 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Features ── */}
-      <section className="landing-section landing-section-alt" id="features">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <h2 className="landing-section-title">Everything you need</h2>
-            <p className="landing-section-desc">
+      <section className="py-20 bg-gray-50 border-y border-gray-200" id="features">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Everything you need</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Powerful features that make splitting painless.
             </p>
           </div>
-          <div className="landing-features-grid">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="landing-feature-card">
-                <div className="landing-feature-icon-wrap">
-                  <Icon className="landing-feature-icon" />
+              <div key={title} className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6">
+                  <Icon className="w-6 h-6" />
                 </div>
-                <h3 className="landing-feature-title">{title}</h3>
-                <p className="landing-feature-desc">{description}</p>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">{title}</h3>
+                <p className="text-slate-600 leading-relaxed">{description}</p>
               </div>
             ))}
           </div>
@@ -230,686 +258,50 @@ export default async function LandingPage() {
       </section>
 
       {/* ── CTA Banner ── */}
-      <section className="landing-cta-section">
-        <div className="landing-cta-orb" aria-hidden="true" />
-        <div className="landing-container landing-cta-inner">
-          <h2 className="landing-cta-title">
-            Ready to split smarter?
-          </h2>
-          <p className="landing-cta-subtitle">
-            Join thousands of people who use Spreetail to keep finances fair
-            and friendships intact.
-          </p>
-          <Link href="/register" className="landing-cta-btn landing-cta-btn-white" id="cta-get-started">
-            Create your free account
-            <ArrowRight className="landing-cta-icon" />
-          </Link>
+      <section className="py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-900 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-600 rounded-full blur-3xl opacity-30" />
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-violet-600 rounded-full blur-3xl opacity-30" />
+            
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                Ready to split smarter?
+              </h2>
+              <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
+                Join thousands of people who use Spreetail to keep finances fair and friendships intact.
+              </p>
+              <Link 
+                href="/register" 
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-slate-900 bg-white rounded-xl hover:bg-gray-50 transition-all shadow-lg active:scale-95"
+              >
+                Create your free account
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="landing-footer">
-        <div className="landing-container landing-footer-inner">
-          <div className="landing-logo">
-            <div className="landing-logo-icon">S</div>
-            <span className="landing-logo-text landing-logo-text-muted">Spreetail</span>
+      <footer className="bg-gray-50 py-12 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+              S
+            </div>
+            <span className="font-bold text-lg text-slate-900">Spreetail</span>
           </div>
-          <p className="landing-footer-copy">
+          <p className="text-slate-500 text-sm">
             © {new Date().getFullYear()} Spreetail. Built with ❤️ for fair finances.
           </p>
-          <div className="landing-footer-links">
-            <Link href="/login" className="landing-footer-link">Sign in</Link>
-            <Link href="/register" className="landing-footer-link">Register</Link>
+          <div className="flex gap-6">
+            <Link href="/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Sign in</Link>
+            <Link href="/register" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Register</Link>
           </div>
         </div>
       </footer>
-
-      <style>{`
-        /* ── Reset & base ── */
-        .landing-page {
-          min-height: 100vh;
-          background: #0a0a0f;
-          color: #e2e8f0;
-          font-family: 'Inter', system-ui, sans-serif;
-          overflow-x: hidden;
-        }
-
-        .landing-container {
-          max-width: 1120px;
-          margin: 0 auto;
-          padding: 0 1.5rem;
-        }
-
-        /* ── Navbar ── */
-        .landing-nav {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          backdrop-filter: blur(16px);
-          background: rgba(10, 10, 15, 0.8);
-          border-bottom: 1px solid rgba(139, 92, 246, 0.15);
-        }
-
-        .landing-nav-inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          height: 64px;
-        }
-
-        .landing-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          text-decoration: none;
-        }
-
-        .landing-logo-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #7c3aed, #6d28d9);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 1rem;
-          color: #fff;
-          box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
-        }
-
-        .landing-logo-text {
-          font-weight: 700;
-          font-size: 1.1rem;
-          color: #f1f5f9;
-        }
-
-        .landing-logo-text-muted {
-          color: #94a3b8;
-        }
-
-        .landing-nav-links {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .landing-nav-link {
-          color: #94a3b8;
-          font-size: 0.9rem;
-          font-weight: 500;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-
-        .landing-nav-link:hover {
-          color: #f1f5f9;
-        }
-
-        .landing-cta-btn-small {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 18px;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          background: linear-gradient(135deg, #7c3aed, #6d28d9);
-          color: #fff;
-          text-decoration: none;
-          transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 0 24px rgba(124, 58, 237, 0.35);
-        }
-
-        .landing-cta-btn-small:hover {
-          opacity: 0.9;
-          transform: translateY(-1px);
-          box-shadow: 0 0 32px rgba(124, 58, 237, 0.5);
-        }
-
-        /* ── Hero ── */
-        .landing-hero {
-          position: relative;
-          padding: 100px 0 80px;
-          overflow: hidden;
-        }
-
-        .landing-orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.25;
-          pointer-events: none;
-        }
-
-        .landing-orb-1 {
-          width: 600px;
-          height: 600px;
-          top: -200px;
-          left: -100px;
-          background: radial-gradient(circle, #7c3aed, transparent 70%);
-          animation: orbFloat 8s ease-in-out infinite alternate;
-        }
-
-        .landing-orb-2 {
-          width: 500px;
-          height: 500px;
-          top: 100px;
-          right: -150px;
-          background: radial-gradient(circle, #4f46e5, transparent 70%);
-          animation: orbFloat 10s ease-in-out infinite alternate-reverse;
-        }
-
-        @keyframes orbFloat {
-          from { transform: translateY(0px) scale(1); }
-          to   { transform: translateY(30px) scale(1.05); }
-        }
-
-        .landing-hero-inner {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 1.5rem;
-        }
-
-        .landing-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 16px;
-          border-radius: 999px;
-          background: rgba(124, 58, 237, 0.15);
-          border: 1px solid rgba(124, 58, 237, 0.35);
-          font-size: 0.8rem;
-          font-weight: 500;
-          color: #a78bfa;
-        }
-
-        .landing-badge-icon {
-          width: 14px;
-          height: 14px;
-        }
-
-        .landing-hero-title {
-          font-size: clamp(2.8rem, 7vw, 5rem);
-          font-weight: 800;
-          line-height: 1.1;
-          letter-spacing: -0.03em;
-          color: #f8fafc;
-          margin: 0;
-        }
-
-        .landing-gradient-text {
-          background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .landing-hero-desc {
-          max-width: 600px;
-          font-size: 1.125rem;
-          line-height: 1.7;
-          color: #94a3b8;
-          margin: 0;
-        }
-
-        .landing-hero-actions {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .landing-cta-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 28px;
-          border-radius: 12px;
-          font-size: 1rem;
-          font-weight: 600;
-          background: linear-gradient(135deg, #7c3aed, #6d28d9);
-          color: #fff;
-          text-decoration: none;
-          transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-          box-shadow: 0 0 32px rgba(124, 58, 237, 0.45);
-        }
-
-        .landing-cta-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 48px rgba(124, 58, 237, 0.65);
-        }
-
-        .landing-cta-btn-white {
-          background: #f8fafc;
-          color: #1e1b4b;
-          box-shadow: 0 4px 32px rgba(0,0,0,0.3);
-        }
-
-        .landing-cta-btn-white:hover {
-          background: #fff;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-        }
-
-        .landing-cta-icon {
-          width: 18px;
-          height: 18px;
-        }
-
-        .landing-ghost-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 28px;
-          border-radius: 12px;
-          font-size: 1rem;
-          font-weight: 600;
-          border: 1px solid rgba(148, 163, 184, 0.25);
-          color: #94a3b8;
-          text-decoration: none;
-          transition: border-color 0.2s, color 0.2s, background 0.2s;
-        }
-
-        .landing-ghost-btn:hover {
-          border-color: rgba(148, 163, 184, 0.5);
-          color: #f1f5f9;
-          background: rgba(255,255,255,0.04);
-        }
-
-        /* ── Dashboard Preview ── */
-        .landing-preview {
-          width: 100%;
-          max-width: 900px;
-          margin-top: 2rem;
-          border-radius: 16px;
-          overflow: hidden;
-          border: 1px solid rgba(139, 92, 246, 0.2);
-          box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(124, 58, 237, 0.15);
-          background: #12121a;
-          animation: previewRise 0.8s ease-out both;
-        }
-
-        @keyframes previewRise {
-          from { opacity: 0; transform: translateY(40px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .landing-preview-bar {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 10px 16px;
-          background: #1a1a28;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .landing-preview-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-
-        .landing-preview-bar-title {
-          font-size: 0.75rem;
-          color: #475569;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .landing-preview-body {
-          display: flex;
-          height: 320px;
-        }
-
-        /* Mock sidebar */
-        .landing-mock-sidebar {
-          width: 200px;
-          border-right: 1px solid rgba(255,255,255,0.06);
-          padding: 16px 12px;
-          flex-shrink: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .landing-mock-brand {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px;
-          margin-bottom: 8px;
-        }
-
-        .landing-mock-logo {
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        }
-
-        .landing-mock-brand-text {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: #e2e8f0;
-        }
-
-        .landing-mock-nav-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 10px;
-          border-radius: 8px;
-          font-size: 0.75rem;
-          color: #64748b;
-          cursor: default;
-        }
-
-        .landing-mock-nav-item.active {
-          background: rgba(124, 58, 237, 0.15);
-          color: #a78bfa;
-        }
-
-        .landing-mock-nav-icon {
-          width: 14px;
-          height: 14px;
-          border-radius: 3px;
-          background: currentColor;
-          opacity: 0.4;
-          flex-shrink: 0;
-        }
-
-        /* Mock content */
-        .landing-mock-content {
-          flex: 1;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .landing-mock-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .landing-mock-title-block {
-          height: 20px;
-          width: 140px;
-          border-radius: 6px;
-          background: rgba(255,255,255,0.1);
-        }
-
-        .landing-mock-btn {
-          height: 28px;
-          width: 90px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(109,40,217,0.5));
-        }
-
-        .landing-mock-cards {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-
-        .landing-mock-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 12px;
-          padding: 14px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .landing-mock-card-title {
-          font-size: 0.72rem;
-          font-weight: 600;
-          color: #cbd5e1;
-        }
-
-        .landing-mock-card-meta {
-          display: flex;
-          gap: 6px;
-        }
-
-        .landing-mock-meta-pill {
-          height: 10px;
-          width: 48px;
-          border-radius: 99px;
-          background: rgba(255,255,255,0.08);
-        }
-
-        .landing-mock-meta-pill.short {
-          width: 32px;
-        }
-
-        .landing-mock-card-amount {
-          height: 12px;
-          width: 70px;
-          border-radius: 4px;
-          background: rgba(167, 139, 250, 0.3);
-          margin-top: 4px;
-        }
-
-        /* ── Sections ── */
-        .landing-section {
-          padding: 80px 0;
-        }
-
-        .landing-section-alt {
-          background: rgba(255, 255, 255, 0.02);
-          border-top: 1px solid rgba(255,255,255,0.06);
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .landing-section-header {
-          text-align: center;
-          margin-bottom: 3rem;
-        }
-
-        .landing-section-title {
-          font-size: clamp(1.8rem, 4vw, 2.5rem);
-          font-weight: 800;
-          color: #f1f5f9;
-          margin: 0 0 0.75rem;
-          letter-spacing: -0.02em;
-        }
-
-        .landing-section-desc {
-          font-size: 1.05rem;
-          color: #64748b;
-          max-width: 500px;
-          margin: 0 auto;
-          line-height: 1.6;
-        }
-
-        /* ── Steps ── */
-        .landing-steps {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 2rem;
-        }
-
-        .landing-step {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 0.75rem;
-        }
-
-        .landing-step-number {
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
-          background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3));
-          border: 1px solid rgba(124,58,237,0.4);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.1rem;
-          font-weight: 800;
-          color: #a78bfa;
-        }
-
-        .landing-step-title {
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #e2e8f0;
-          margin: 0;
-        }
-
-        .landing-step-desc {
-          font-size: 0.9rem;
-          color: #64748b;
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        /* ── Features ── */
-        .landing-features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 1.5rem;
-        }
-
-        .landing-feature-card {
-          padding: 1.75rem;
-          border-radius: 16px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
-          transition: border-color 0.25s, background 0.25s, transform 0.25s;
-        }
-
-        .landing-feature-card:hover {
-          border-color: rgba(124, 58, 237, 0.4);
-          background: rgba(124, 58, 237, 0.05);
-          transform: translateY(-3px);
-        }
-
-        .landing-feature-icon-wrap {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(79,70,229,0.25));
-          border: 1px solid rgba(124,58,237,0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 1rem;
-        }
-
-        .landing-feature-icon {
-          width: 20px;
-          height: 20px;
-          color: #a78bfa;
-        }
-
-        .landing-feature-title {
-          font-size: 1rem;
-          font-weight: 700;
-          color: #e2e8f0;
-          margin: 0 0 0.5rem;
-        }
-
-        .landing-feature-desc {
-          font-size: 0.875rem;
-          color: #64748b;
-          line-height: 1.65;
-          margin: 0;
-        }
-
-        /* ── CTA Section ── */
-        .landing-cta-section {
-          position: relative;
-          padding: 100px 0;
-          text-align: center;
-          overflow: hidden;
-        }
-
-        .landing-cta-orb {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.2) 0%, transparent 70%);
-          pointer-events: none;
-        }
-
-        .landing-cta-inner {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1.25rem;
-        }
-
-        .landing-cta-title {
-          font-size: clamp(2rem, 5vw, 3.5rem);
-          font-weight: 800;
-          color: #f8fafc;
-          margin: 0;
-          letter-spacing: -0.02em;
-        }
-
-        .landing-cta-subtitle {
-          font-size: 1.05rem;
-          color: #64748b;
-          max-width: 480px;
-          line-height: 1.65;
-          margin: 0;
-        }
-
-        /* ── Footer ── */
-        .landing-footer {
-          border-top: 1px solid rgba(255,255,255,0.06);
-          padding: 2rem 0;
-        }
-
-        .landing-footer-inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .landing-footer-copy {
-          font-size: 0.8rem;
-          color: #475569;
-          margin: 0;
-        }
-
-        .landing-footer-links {
-          display: flex;
-          gap: 1.25rem;
-        }
-
-        .landing-footer-link {
-          font-size: 0.8rem;
-          color: #475569;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-
-        .landing-footer-link:hover {
-          color: #94a3b8;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 640px) {
-          .landing-mock-sidebar { display: none; }
-          .landing-mock-cards { grid-template-columns: 1fr 1fr; }
-          .landing-preview-body { height: 240px; }
-          .landing-footer-inner { flex-direction: column; text-align: center; }
-          .landing-footer-links { justify-content: center; }
-        }
-      `}</style>
     </div>
   );
 }
