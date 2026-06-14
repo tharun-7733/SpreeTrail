@@ -19,7 +19,7 @@ This file tracks how AI tools were used during this project, including specific 
 1. Master prompt establishing rules: interview-first, no silent decisions, maintain DECISIONS.md/SCOPE.md/AI_USAGE.md.
 2. Section-by-section interview prompts for: Product Scope, Auth, Groups, Expenses, CSV Import, Balances.
 3. CSV anomaly analysis: "Analyze expenses_export.csv, detect every anomaly, never silently fix data."
-4. Fix prompts for specific bugs: "Solve all request failed problems in the website."
+4. Investigate and fix all request failures throughout the website to ensure all features function correctly."
 
 ---
 
