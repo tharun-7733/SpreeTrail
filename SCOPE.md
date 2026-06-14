@@ -33,6 +33,19 @@ These are the three mandatory features for the first demo, prioritized by engine
 - Queries must always filter `WHERE deletedAt IS NULL` to exclude soft-deleted records.
 - `isActive` on `User` gates new actions only — never used in historical balance queries.
 
+## Anomaly Log (CSV Data Problems & Handling)
+The CSV import pipeline is designed to never silently fix critical financial data. The following anomalies were anticipated and handled:
+1. **Duplicate Expenses**: Detected via identical date, amount, and payer (e.g., Row 5 vs 6). Handling: Flagged for user approval; user must explicitly skip or approve.
+2. **Negative Amounts**: Detected when amount < 0 (e.g., Row 26). Handling: Row is converted to `TransactionType.REFUND` with a positive absolute amount.
+3. **Invalid Percentage Sums**: Detected when percentages do not equal 100% ± 0.1% (e.g., Row 15, 32). Handling: Blocked from import. User is prompted to adjust percentages in the review UI until they sum to 100%.
+4. **Unknown Members**: Detected when names in `paid_by` or `split_with` don't map to registered users (e.g., "Dev's friend Kabir", "Priya S"). Handling: Prompt user to either map to an existing user or create a `GuestParticipant`.
+5. **Settlements as Expenses**: Detected when notes explicitly say "settlement" or when an expense has 0 participants (e.g., Row 14). Handling: Reclassified and saved to the `Settlement` table instead of `Expense`.
+6. **Ambiguous Dates**: Detected when date format isn't standard `DD-MM-YYYY` (e.g., "Mar-14", "04-05-2026"). Handling: Flagged for manual date verification by the user.
+7. **Missing Currency**: Empty currency fields (e.g., Row 28). Handling: Flagged. Defaulted to the group's base currency, but user must confirm.
+8. **Inactive Member inclusion**: Detected if a member is in a split but their `leftAt` date is prior to the expense date (e.g., Meera in April). Handling: Flagged for user to confirm if they should still pay or if the split should be recalculated.
+9. **Zero Amounts**: Detected when amount is 0 (e.g., Row 31). Handling: Flagged. Usually skipped by the user.
+10. **Mismatching Split Type & Details**: Detected if `split_type` is `equal` but `split_details` provides shares (e.g., Row 42). Handling: Flagged. User must choose which field to trust.
+
 ## Split Validation Rules
 | Split Type  | Validation Rule |
 |-------------|-----------------|
