@@ -24,7 +24,7 @@ export async function signToken(payload: Record<string, unknown>) {
   return await new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("30d")
     .sign(getSecret());
 }
 
