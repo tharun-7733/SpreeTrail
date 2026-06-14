@@ -33,12 +33,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ groupId:
     if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const expenses = await prisma.expense.findMany({
-      where: { groupId },
+      where: { groupId, deletedAt: null },
       include: {
         paidBy: { select: { id: true, name: true, email: true, avatarUrl: true } },
         participants: { include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { date: "desc" },
     });
 
     return NextResponse.json({ expenses: JSON.parse(JSON.stringify(expenses)) });

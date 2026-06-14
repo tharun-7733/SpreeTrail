@@ -1,5 +1,5 @@
 // app/api/groups/[groupId]/members/route.ts
-// Decision 32: POST /api/groups/:groupId/members — add member (admin only)
+// Decision 32: POST /api/groups/:groupId/members — add member by email (admin only)
 // Decision 12: UI enforces membership validity. Importer preserves history.
 
 import { NextResponse } from "next/server";
@@ -9,9 +9,8 @@ import { errorResponse, successResponse, ERR } from "@/lib/errorResponse";
 import { z } from "zod";
 
 const addMemberSchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email("Invalid email address"),
   role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
-  joinedAt: z.string().optional(), // ISO date string, defaults to now
 });
 
 export async function POST(
@@ -37,24 +36,48 @@ export async function POST(
     const body = await req.json();
     const parsed = addMemberSchema.parse(body);
 
+    // Look up user by email
+    const userToAdd = await prisma.user.findUnique({
+      where: { email: parsed.email },
+      select: { id: true, name: true, email: true, avatarUrl: true },
+    });
+    if (!userToAdd)
+      return errorResponse(ERR.NOT_FOUND, "No user found with that email address.", 404);
+
+    // Cannot add yourself (you're already a member)
+    if (userToAdd.id === session.userId)
+      return errorResponse(ERR.VALIDATION, "You are already a member of this group.", 400);
+
     // Check if user already exists in group
     const existing = await prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId, userId: parsed.userId } },
+      where: { groupId_userId: { groupId, userId: userToAdd.id } },
     });
-    if (existing)
+    if (existing && existing.leftAt === null)
       return errorResponse("ALREADY_MEMBER", "User is already a member of this group.", 409);
 
-    const member = await prisma.groupMember.create({
-      data: {
-        groupId,
-        userId: parsed.userId,
-        role: parsed.role,
-        joinedAt: parsed.joinedAt ? new Date(parsed.joinedAt) : new Date(),
-      },
-      include: {
-        user: { select: { id: true, name: true, email: true, avatarUrl: true } },
-      },
-    });
+    let member;
+    if (existing && existing.leftAt !== null) {
+      // Re-add previously removed member
+      member = await prisma.groupMember.update({
+        where: { id: existing.id },
+        data: { leftAt: null, role: parsed.role, joinedAt: new Date() },
+        include: {
+          user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        },
+      });
+    } else {
+      member = await prisma.groupMember.create({
+        data: {
+          groupId,
+          userId: userToAdd.id,
+          role: parsed.role,
+          joinedAt: new Date(),
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        },
+      });
+    }
 
     return successResponse(member, 201);
   } catch (err: unknown) {

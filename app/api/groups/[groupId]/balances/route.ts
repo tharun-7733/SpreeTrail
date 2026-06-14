@@ -28,7 +28,7 @@ export async function GET(
     // Fetch all active group members (including those who have left — needed for history)
     const allMembers = await prisma.groupMember.findMany({
       where: { groupId },
-      include: { user: { select: { id: true, name: true } } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     });
 
     // Decision 27: Membership window filter in SQL
@@ -89,8 +89,23 @@ export async function GET(
     const balances = computeGroupBalances(filteredExpenses, settlementRows, memberStubs);
 
     // Decision 34: Return both simplified debts and raw net balances
+    // Also return members with full user objects for the UI
     return successResponse({
       simplifiedDebts: balances.simplifiedDebts,
+      members: balances.members.map((m) => {
+        const memberRecord = allMembers.find((am) => am.userId === m.userId);
+        return {
+          userId: m.userId,
+          net: m.net,
+          totalPaid: m.totalPaid,
+          totalOwed: m.totalOwed,
+          user: {
+            id: m.userId,
+            name: m.user.name,
+            avatarUrl: memberRecord?.user ? (memberRecord.user as any).avatarUrl ?? null : null,
+          },
+        };
+      }),
       rawNetBalances: balances.members.map((m) => ({
         userId: m.userId,
         userName: m.user.name,

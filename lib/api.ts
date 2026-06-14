@@ -14,7 +14,7 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(error.error || `HTTP ${res.status}`);
+    throw new Error(error.error || error.message || `HTTP ${res.status}`);
   }
 
   const json = await res.json();
@@ -30,6 +30,8 @@ export const api = {
       apiFetch("/api/auth/login", { method: "POST", body: data }),
     me: () => apiFetch("/api/auth/me"),
     logout: () => apiFetch("/api/auth/logout", { method: "POST" }),
+    updateProfile: (data: { name?: string; currentPassword?: string; newPassword?: string }) =>
+      apiFetch("/api/auth/me", { method: "PATCH", body: data }),
   },
 
   // Groups
@@ -38,7 +40,7 @@ export const api = {
     create: (data: { name: string; description?: string }) =>
       apiFetch("/api/groups", { method: "POST", body: data }),
     get: (groupId: string) => apiFetch(`/api/groups/${groupId}`),
-    update: (groupId: string, data: { name?: string; description?: string }) =>
+    update: (groupId: string, data: { name?: string; description?: string | null }) =>
       apiFetch(`/api/groups/${groupId}`, { method: "PATCH", body: data }),
     delete: (groupId: string) =>
       apiFetch(`/api/groups/${groupId}`, { method: "DELETE" }),
@@ -47,10 +49,10 @@ export const api = {
   // Members
   members: {
     list: (groupId: string) => apiFetch(`/api/groups/${groupId}/members`),
-    add: (groupId: string, data: { email: string }) =>
+    add: (groupId: string, data: { email: string; role?: "ADMIN" | "MEMBER" }) =>
       apiFetch(`/api/groups/${groupId}/members`, { method: "POST", body: data }),
-    remove: (groupId: string, userId: string) =>
-      apiFetch(`/api/groups/${groupId}/members/${userId}`, { method: "DELETE" }),
+    remove: (groupId: string, memberId: string) =>
+      apiFetch(`/api/groups/${groupId}/members/${memberId}`, { method: "DELETE" }),
   },
 
   // Expenses
