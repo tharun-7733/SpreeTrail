@@ -10,7 +10,7 @@ A production-quality shared expense management application for flatmates, built 
 
 ---
 
-## 📋 Assignment Context
+## Assignment Context
 
 Built as an internship engineering assignment demonstrating:
 - CSV import with full anomaly detection and review workflow
@@ -21,7 +21,7 @@ Built as an internship engineering assignment demonstrating:
 
 ---
 
-## 📂 Project Files
+## Project Files
 
 | File | Purpose |
 |---|---|
@@ -33,7 +33,7 @@ Built as an internship engineering assignment demonstrating:
 
 ---
 
-## 🤖 AI Usage
+## AI Usage
 
 This project was built with the assistance of **Google Antigravity (Gemini/Claude)**. 
 AI was strictly used as an engineering pair programming partner, not as a black-box code generator. 
@@ -47,7 +47,7 @@ Detailed prompts, specific AI mistakes, and how they were corrected are fully do
 
 ---
 
-## 🗄️ Database Schema (10 tables)
+## Database Schema (10 tables)
 
 ```
 User               — authenticated users
@@ -64,7 +64,7 @@ ImportedExpenseRaw — raw CSV rows + anomalies + resolutions (permanent audit t
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 - **Framework:** Next.js 16 (App Router)
 - **Database:** Neon PostgreSQL (serverless)
@@ -75,7 +75,7 @@ ImportedExpenseRaw — raw CSV rows + anomalies + resolutions (permanent audit t
 
 ---
 
-## 🧮 Balance Engine
+## Balance Engine
 
 Located in [`lib/balances.ts`](./lib/balances.ts).
 
@@ -87,7 +87,7 @@ Located in [`lib/balances.ts`](./lib/balances.ts).
 
 ---
 
-## 📥 CSV Import Pipeline
+## CSV Import Pipeline
 
 6-step resumable import process:
 
@@ -103,7 +103,7 @@ Raw CSV data is **never overwritten**. Every correction is stored alongside the 
 
 ---
 
-## 🛠️ Running Locally
+## Running Locally
 
 ### Prerequisites
 - Node.js 18+
@@ -203,7 +203,7 @@ Raw CSV data is **never overwritten**. Every correction is stored alongside the 
 
 ---
 
-## 📊 Data Integrity Rules
+## Data Integrity Rules
 
 - Historical expenses are **immutable after import**
 - Manual expenses are editable until settlement activity exists in the group
@@ -212,7 +212,7 @@ Raw CSV data is **never overwritten**. Every correction is stored alongside the 
 
 ---
 
-## ⚡ Known Limitations (Documented Tradeoffs)
+## Known Limitations (Documented Tradeoffs)
 
 - Exchange rates are user-supplied per import session (not live API rates) — Decision 20
 - All USD expenses in one session share one exchange rate — documented approximation
