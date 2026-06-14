@@ -1,11 +1,23 @@
 import * as jose from "jose";
 import { cookies } from "next/headers";
 
+// Security: Throw at startup in production if JWT_SECRET is not set
+const jwtSecretRaw = process.env.JWT_SECRET;
+if (process.env.NODE_ENV === "production" && !jwtSecretRaw) {
+  throw new Error("JWT_SECRET environment variable is required in production.");
+}
+
+if (!jwtSecretRaw) {
+  console.warn(
+    "[auth] WARNING: JWT_SECRET is not set. Using a default dev secret. DO NOT use this in production."
+  );
+}
+
 const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default_super_secret_key_for_development"
+  jwtSecretRaw || "default_super_secret_key_for_development_only_32+"
 );
 
-export async function signToken(payload: any) {
+export async function signToken(payload: Record<string, unknown>) {
   return await new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -17,7 +29,7 @@ export async function verifyToken(token: string) {
   try {
     const { payload } = await jose.jwtVerify(token, secret);
     return payload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
