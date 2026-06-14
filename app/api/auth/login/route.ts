@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       user: { id: user.id, email: user.email, name: user.name },
     });
   } catch (error) {
+    console.error("Login error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Validation error", details: error.errors }, { status: 400 });
     }
